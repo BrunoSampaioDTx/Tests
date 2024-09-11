@@ -31,7 +31,7 @@ jobs:
           elif [ -n "${{ github.event.pull_request.user.login }}" ]; then
              echo "COMMITER_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_ENV
           elif [ -n "${{ github.event.pull_request.merged_by.login }}" ]; then
-            echo "COMMITER_EMAIL="${{ github.event.pull_request.merged_by.email }}" >> $GITHUB_ENV
+            echo "COMMITER_EMAIL=${{ github.event.pull_request.merged_by.email }}" >> $GITHUB_ENV
           else
             echo "COMMITER_EMAIL=$(echo '${{ github.actor }}@dtx-colab.pt' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
           fi
