@@ -23,26 +23,21 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set COMMITER_EMAIL environment variable
-        id: set-email
+      - name: Log email of committer
         run: |
-          # Case 1: Email for push event
+          # Case 1: Get email for push event
           if [ -n "${{ github.event.head_commit.author.email }}" ]; then
-            echo "COMMITER_EMAIL=$(echo '${{ github.event.head_commit.author.email }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+            echo "Committer Email from head commit: ${{ github.event.head_commit.author.email }}"
 
-          # Case 2: Email for pull request event (PR author)
+          # Case 2: Get email for pull request event (PR author)
           elif [ -n "${{ github.event.pull_request.user.login }}" ]; then
-            echo "COMMITER_EMAIL=$(git log -1 --pretty=format:'%ae' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+            echo "Committer Email from PR user login: $(git log -1 --pretty=format:'%ae')"
 
-          # Case 3: PR merged, try to get merged_by email
+          # Case 3: If PR is merged, try to get merged_by email (might not always be available)
           elif [ -n "${{ github.event.pull_request.merged_by.login }}" ]; then
-            echo "COMMITER_EMAIL=$(echo '${{ github.event.pull_request.merged_by.email }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+            echo "Committer Email from merged by: ${{ github.event.pull_request.merged_by.email }}"
 
-          # Case 4: Fallback to GitHub actor's noreply email
+          # Case 4: Fallback to GitHub actor's noreply email (for when none of the above applies)
           else
-            echo "COMMITER_EMAIL=$(echo '${{ github.actor }}@users.noreply.github.com' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+            echo "Fallback email: ${{ github.actor }}@users.noreply.github.com"
           fi
-
-      - name: Log COMMITER_EMAIL
-        run: |
-          echo "COMMITER_EMAIL is: $COMMITER_EMAIL"
