@@ -31,4 +31,5 @@ jobs:
             echo "email: ${{ github.actor }}"
             echo "email: ${{ github.event.pull_request.user.email }}"
             echo "email: $(git log -1 --pretty=format:'%ae')"
+            echo "email: ${{ github.event.pull_request.merged_by.email }}"
 
