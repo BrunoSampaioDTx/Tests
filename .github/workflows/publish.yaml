@@ -35,3 +35,11 @@ jobs:
       - name: Log COMMITER_EMAIL
         run: |
           echo "COMMITER_EMAIL is: $COMMITER_EMAIL"
+
+      - name: Set COMMITER_NAME environment variable
+        run: |
+          if [ -n "${{ github.event.head_commit.author.name }}" ]; then
+            echo "COMMITER_NAME=$(echo '${{ github.event.head_commit.author.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+          else
+            echo "COMMITER_NAME=$(echo '${{ github.actor }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
