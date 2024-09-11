@@ -12,7 +12,7 @@ env:
   COMMITER_EMAIL: ${{ github.event.pull_request.merged_by.email }}
 
 jobs:
-  publish:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -28,3 +28,4 @@ jobs:
       - name:  log email of commiter
         run: |
             echo "email: ${{ github.event.head_commit.author.email }}"
+            echo "email: ${{ github.actor }}"
