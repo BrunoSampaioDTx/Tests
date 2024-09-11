@@ -8,16 +8,14 @@ on:
     branches:
       - master
 
-env:
-  COMMITER_EMAIL: ${{ github.event.pull_request.merged_by.email }}
-
 jobs:
   test:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     outputs:
-        tag: ${{ steps.tag.outputs.tag }}
+      tag: ${{ steps.tag.outputs.tag }}
+
     steps:
       - uses: pedro-nicolau-carvalho/checkout-branch@v1.1
       - uses: pedro-nicolau-carvalho/try-generate-tag@v1.2
@@ -25,11 +23,26 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name:  log email of commiter
+      - name: Set COMMITER_EMAIL environment variable
+        id: set-email
         run: |
-            echo "email: ${{ github.event.head_commit.author.email }}"
-            echo "email: ${{ github.actor }}"
-            echo "email: ${{ github.event.pull_request.user.email }}"
-            echo "email: $(git log -1 --pretty=format:'%ae')"
-            echo "email: ${{ github.event.pull_request.merged_by.email }}"
+          # Case 1: Email for push event
+          if [ -n "${{ github.event.head_commit.author.email }}" ]; then
+            echo "COMMITER_EMAIL=$(echo '${{ github.event.head_commit.author.email }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+          # Case 2: Email for pull request event (PR author)
+          elif [ -n "${{ github.event.pull_request.user.login }}" ]; then
+            echo "COMMITER_EMAIL=$(git log -1 --pretty=format:'%ae' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+          # Case 3: PR merged, try to get merged_by email
+          elif [ -n "${{ github.event.pull_request.merged_by.login }}" ]; then
+            echo "COMMITER_EMAIL=$(echo '${{ github.event.pull_request.merged_by.email }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+          # Case 4: Fallback to GitHub actor's noreply email
+          else
+            echo "COMMITER_EMAIL=$(echo '${{ github.actor }}@users.noreply.github.com' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          fi
+
+      - name: Log COMMITER_EMAIL
+        run: |
+          echo "COMMITER_EMAIL is: $COMMITER_EMAIL"
